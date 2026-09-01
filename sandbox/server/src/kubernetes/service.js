@@ -5,21 +5,24 @@ export async function createService(sandboxId) {
         metadata: {
             name: `sandbox-service-${sandboxId}`,
             labels: {
-                app: 'sandbox',
+                app: "sandbox",
                 sandboxId
             }
         },
         spec: {
             selector: {
-                app: 'sandbox',
+                app: "sandbox",
                 sandboxId
             },
-            ports: [{
-                name: "http",
-                port: 80,
-                targetPort: 5173,
-                protocol: "TCP"
-            }],
+            ports: [
+                {
+                    name: "http",
+                    port: 80,
+                    targetPort: 5173    ,
+                    protocol: "TCP"
+                }
+            ],
+
             type: "ClusterIP"
         }
     }
