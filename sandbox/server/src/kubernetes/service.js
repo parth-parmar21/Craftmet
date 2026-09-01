@@ -15,9 +15,10 @@ export async function createService(sandboxId) {
                 sandboxId
             },
             ports: [{
-                port: 5173,
+                name: "http",
+                port: 80,
                 targetPort: 5173,
-                name: "http"
+                protocol: "TCP"
             }],
             type: "ClusterIP"
         }
