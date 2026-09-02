@@ -14,6 +14,7 @@ app.get("/api/status/readyz", (req, res) => {
 });
 
 const proxies = {}
+const agentProxies = {}
 
 function getProxy(sandboxId) {
     const target = `http://sandbox-service-${sandboxId}`;
@@ -25,15 +26,37 @@ function getProxy(sandboxId) {
             ws: true
         })
     }
+    return proxies[sandboxId]
+}
+
+function getAgent(sandboxId) {
+    const target = `http://sandbox-service-${sandboxId}:3000`;
+
+    if (!agentProxies[sandboxId]) {
+        agentProxies[sandboxId] = createProxyMiddleware({
+            target,
+            changeOrigin: true,
+            ws: true
+        })
+    }
+    return agentProxies[sandboxId]
 }
 
 app.use((req, res, next) => {
     const host = req.headers.host;
     const sandboxId = host.split('.')[0];
 
-    
+/**
+ * pod1.preview.localhost
+ * pod1.agent.localhost    both will manage by router server
+ */
 
-    return getProxy(sandboxId)(req, res, next);
+    if(host.split('.')[1] === 'agent'){
+        return getAgent(sandboxId)(req, res, next);
+    } else if(host.split('.')[1] === 'preview'){
+        return getProxy(sandboxId)(req, res, next);
+    }
+
 })
 
 export default app
