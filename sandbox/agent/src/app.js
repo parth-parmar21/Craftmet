@@ -131,7 +131,7 @@ app.post("/create-files", async (req, res) => {
         })
     }
 
-    const results = await Promise.all(files.map(async (file) => {
+    const results = await Promise.all(files.map(async (fileObj) => {
         const { file, content } = fileObj
         const filePath = path.join(WORKING_DIR, filename)
         try {
