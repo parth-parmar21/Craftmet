@@ -4,6 +4,8 @@ import fs from "fs"
 import path from "path"
 const app = express()
 app.use(morgan("dev"))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 const WORKING_DIR = "/workspace"
 
@@ -63,15 +65,15 @@ app.get("/read-files", async (req, res) => {
     const fileList = files.split(',')
 
     const result = await Promise.all(fileList.map(async (filename) => {
-        const filePath = `${WORKING_DIR}/${filename}`
+        const filePath = path.join(WORKING_DIR, filename)
         try {
             const content = await fs.promises.readFile(filePath, "utf-8")
             return {
-                [filePath]: content
+                [filePath.replace(WORKING_DIR, "")]: content
             }
         } catch (err) {
             return {
-                [filePath]: `Error reading file: ${err.message}`
+                [filePath.replace(WORKING_DIR, "")]: `Error reading file: ${err.message}`
             }
         }
     }))
@@ -102,11 +104,11 @@ app.patch("/update-files", async (req, res) => {
         try {
             await fs.promises.writeFile(filePath, content, "utf-8")
             return {
-                [filePath]: "File updated successfully"
+                [filePath.replace(WORKING_DIR, "")]: "File updated successfully"
             }
         } catch (err) {
             return {
-                [filePath]: `Error updating file: ${err.message}`
+                [filePath.replace(WORKING_DIR, "")]: `Error updating file: ${err.message}`
             }
         }
     }))
@@ -133,8 +135,10 @@ app.post("/create-files", async (req, res) => {
 
     const results = await Promise.all(files.map(async (fileObj) => {
         const { file, content } = fileObj
-        const filePath = path.join(WORKING_DIR, filename)
+        const filePath = path.join(WORKING_DIR, file)
+
         try {
+            await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
             await fs.promises.writeFile(filePath, content, "utf-8")
             return {
                 [filePath]: "File created successfully"
